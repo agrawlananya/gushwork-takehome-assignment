@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local dev. Never commit .dev.vars.
+ENV=dev
+GEMINI_API_KEY=
+GROQ_API_KEY=

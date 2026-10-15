@@ -19,7 +19,7 @@ Out of scope: login, real WhatsApp sending, payments, Excel upload, pipeline sta
 - **DB:** Cloudflare D1 (SQLite) via **Drizzle ORM** + drizzle-kit migrations
 - **API:** Hono, Zod validation (one schema shared by form, API, AI output)
 - **Web:** React + TypeScript + Vite (Cloudflare Vite plugin), Tailwind + shadcn/ui, TanStack Query
-- **AI:** AI SDK `generateObject` — Gemini Flash-Lite (main, model id from `GEMINI_MODEL`) → Groq `openai/gpt-oss-120b` (backup) → our rule engine (last resort)
+- **AI:** AI SDK v7 `generateText` + `output: Output.object({ schema })` (`generateObject` is deprecated in v7) — Gemini Flash-Lite (main, model id from `GEMINI_MODEL`) → Groq `openai/gpt-oss-120b` (backup) → our rule engine (last resort)
 - **Dates:** date-fns + @date-fns/tz, always `Asia/Kolkata`
 - **Tests:** Vitest (unit), Playwright (live smoke test), `scripts/eval.ts` (agent accuracy vs labels)
 - **CI:** GitHub Actions — typecheck + Vitest on push. Deploy is manual.
@@ -65,12 +65,16 @@ migrations/ tests/unit/ tests/e2e/smoke.spec.ts  wrangler.jsonc  README.md
 - Fake data only: phones `+91 90000 000xx`, company "BoxLine Equipment", no prices in `company.json`.
 - Keep it simple: when stuck, pick the simplest option and write it down (PRD §13).
 
-## Commands (once scaffolded)
-- `npm run dev` — local dev (Vite + Worker)
-- `npx vitest` — unit tests
-- `npx drizzle-kit generate` → `wrangler d1 migrations apply leads-db --local|--remote`
-- `npx tsx scripts/eval.ts` / `scripts/make-snapshot.ts`
-- `wrangler deploy`
+## Commands
+- `npm run dev` — local dev (Vite + Worker) on http://localhost:5173
+- `npm run typecheck` — `tsc -b` over app / worker / node projects (TypeScript 7)
+- `npm test` — Vitest unit tests (`tests/unit`)
+- `npm run cf-typegen` — regenerate `src/worker/worker-configuration.d.ts` after changing `wrangler.jsonc` or `.dev.vars`
+- `npm run db:generate` → `npm run db:migrate:local` / `db:migrate:remote`
+- `npm run deploy` — build + `wrangler deploy`
+- Local secrets go in `.dev.vars` (copy `.dev.vars.example`; `ENV=dev` enables `?today=` and `/api/dev/ai-spike`)
+
+Path aliases: `@/` → `src/client`, `@shared/` → `src/shared`. The worker imports shared code by relative path.
 
 ## Deadline
 Submit by **Fri 16 Oct 2026, 10:30 IST**: live link, public GitHub repo, ≤ 3 min video, ½-page note. If behind, follow the cut line in `03-TODO.md`.
