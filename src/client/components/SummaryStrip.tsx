@@ -1,32 +1,31 @@
 import type { Meta } from "@shared/api";
 import { cn } from "@/lib/utils";
 
-/** "5 need reply · 8 overdue · 5 hot" (PRD T-4) for the rep being viewed. */
+/** "5 need reply, 8 overdue, 5 hot" (PRD T-4) for the rep being viewed. */
 function Counts({ meta, rep }: { meta: Meta; rep: string | null }) {
   const counts = rep ? meta.counts.byRep[rep] : meta.counts.all;
   if (!counts) return null;
   const parts = [
-    { n: counts.needsReply, label: "need reply", tone: "text-slate-900" },
-    { n: counts.overdue, label: "overdue", tone: "text-red-700" },
-    { n: counts.hot, label: "hot", tone: "text-orange-800" },
+    { n: counts.needsReply, label: "need reply", tone: "text-ink" },
+    { n: counts.overdue, label: "overdue", tone: "text-signal" },
+    { n: counts.hot, label: "hot", tone: "text-saffron-deep" },
   ];
   return (
-    <p className="text-sm">
-      {parts.map((p, i) => (
-        <span key={p.label}>
-          {i > 0 && <span className="text-slate-400"> · </span>}
-          <span className={cn("font-bold", p.n > 0 ? p.tone : "text-slate-500")}>{p.n}</span>{" "}
-          <span className="text-slate-600">{p.label}</span>
-        </span>
+    <dl className="flex items-end gap-3.5">
+      {parts.map((p) => (
+        <div key={p.label} className="flex flex-col-reverse items-start">
+          <dt className="text-[11px] leading-tight whitespace-nowrap text-mute">{p.label}</dt>
+          <dd className={cn("cond text-[22px] leading-none font-extrabold tabular-nums", p.n > 0 ? p.tone : "text-mute/70")}>{p.n}</dd>
+        </div>
       ))}
-    </p>
+    </dl>
   );
 }
 
 /** Owner view (PRD J4): one scrollable row of per-rep counts; tapping one opens that rep's list. */
 function PerRep({ meta, onPickRep }: { meta: Meta; onPickRep: (rep: string) => void }) {
   return (
-    <ul className="-mx-4 mt-2 flex gap-1.5 overflow-x-auto px-4 pb-1" aria-label="Counts per rep">
+    <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 py-0.5 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0" aria-label="Counts per rep">
       {meta.reps.map((r) => {
         const c = meta.counts.byRep[r.id];
         if (!c) return null;
@@ -35,13 +34,13 @@ function PerRep({ meta, onPickRep }: { meta: Meta; onPickRep: (rep: string) => v
             <button
               type="button"
               onClick={() => onPickRep(r.id)}
-              className="min-h-9 rounded-full border border-slate-200 bg-white px-2.5 text-xs whitespace-nowrap text-slate-700 hover:border-slate-300"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-white px-3 text-xs whitespace-nowrap text-ink-soft transition-colors hover:border-ink/40"
               title={`Show ${r.name}'s list`}
             >
-              <span className="font-semibold text-slate-900">{r.name}</span>
-              {c.overdue > 0 && <span className="text-red-700"> · {c.overdue} overdue</span>}
-              {c.hot > 0 && <span className="text-orange-800"> · {c.hot} hot</span>}
-              {c.overdue === 0 && c.hot === 0 && <span> · all clear</span>}
+              <span className="text-sm font-bold text-ink">{r.name}</span>
+              {c.overdue > 0 && <span className="font-semibold text-signal">{c.overdue} overdue</span>}
+              {c.hot > 0 && <span className="font-semibold text-saffron-deep">{c.hot} hot</span>}
+              {c.overdue === 0 && c.hot === 0 && <span>all clear</span>}
             </button>
           </li>
         );

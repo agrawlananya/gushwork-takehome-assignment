@@ -83,13 +83,13 @@ export function NewLeadPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-10">
-      <Link to="/" className="btn-link -ml-1 text-slate-700">
+      <Link to="/" className="btn-link -ml-1 text-ink-soft">
         <ArrowLeft className="size-4" aria-hidden /> Back
       </Link>
-      <h1 className="mt-1 text-xl font-bold">New lead</h1>
-      <p className="mt-1 text-sm text-slate-600">The agent tags it and writes a first message as soon as you save.</p>
+      <h1 className="cond mt-1 text-[34px] leading-none font-extrabold">New lead</h1>
+      <p className="mt-2 text-sm text-ink-soft">The agent tags it and writes a first message as soon as you save.</p>
 
-      <form onSubmit={submit} noValidate className="mt-4 space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+      <form onSubmit={submit} noValidate className="panel mt-4 space-y-5 p-4 sm:p-5">
         <Field label="Buyer name" error={errors.name}>
           <input id="name" value={form.name} onChange={set("name")} className="field" autoComplete="off" required />
         </Field>
@@ -136,10 +136,10 @@ export function NewLeadPage() {
         </Field>
 
         {duplicate && (
-          <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <div role="alert" className="rounded-lg border-[1.5px] border-saffron bg-saffron/10 p-3 text-sm text-ink">
             {duplicate.message}{" "}
             {duplicate.leadId && (
-              <Link to={`/lead/${duplicate.leadId}`} className="font-semibold underline">
+              <Link to={`/lead/${duplicate.leadId}`} className="inline-flex min-h-11 items-center font-bold text-teal underline underline-offset-4">
                 Open it
               </Link>
             )}
@@ -148,8 +148,8 @@ export function NewLeadPage() {
         {create.isError && !duplicate && <ErrorState message={create.error.message} />}
         {create.isPending && <AgentUpdating label="Saving — the agent is reading this lead…" />}
 
-        <div className="flex gap-2">
-          <button type="submit" className="btn-primary" disabled={create.isPending}>
+        <div className="flex gap-2 border-t border-line pt-4">
+          <button type="submit" className="btn-primary min-w-28" disabled={create.isPending}>
             Save
           </button>
           <Link to="/" className="btn-secondary">
@@ -164,17 +164,17 @@ export function NewLeadPage() {
 function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactElement<{ id: string }> }) {
   const id = children.props.id;
   return (
-    <div>
+    <div data-invalid={error ? "" : undefined}>
       <label htmlFor={id} className="label">
         {label}
       </label>
       {children}
       {error ? (
-        <p className="mt-1 text-sm font-medium text-red-700" role="alert">
+        <p className="mt-1.5 text-sm font-semibold text-signal" role="alert">
           {error}
         </p>
       ) : (
-        hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>
+        hint && <p className="mt-1.5 text-xs text-mute">{hint}</p>
       )}
     </div>
   );

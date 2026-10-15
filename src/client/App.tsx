@@ -18,7 +18,10 @@ export function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <div className="bg-amber-100 px-4 py-0.5 text-center text-xs text-amber-900">Demo — please don't enter real customer data</div>
+      <div className="bg-turmeric text-center text-xs font-semibold text-ink">
+        <p className="px-4 py-1">Demo — please don't enter real customer data</p>
+        <div className="hazard h-1" aria-hidden />
+      </div>
       <Routes>
         <Route path="/" element={<TodayPage />} />
         <Route path="/lead/:id" element={<LeadPage />} />

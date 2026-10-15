@@ -1,26 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap");
 @import "tailwindcss";
 
+/*
+ * Look: a packaging line's shipping marks. Archivo's width axis does the work — condensed heavy
+ * type for names, numbers and due labels (like stencils on a carton), normal width for reading.
+ * Colour is reserved for meaning: saffron = HOT, crimson = overdue only, leaf = your own messages.
+ */
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #14213d; /* enamel navy: text, primary buttons */
+  --color-ink-soft: #3b4760; /* secondary text */
+  --color-mute: #5d6879; /* tertiary text, 5.6:1 on white */
+  --color-line: #d5dbe3;
+  --color-paper: #eef1f4;
+  --color-saffron: #f7941d; /* HOT */
+  --color-saffron-deep: #8a3c00;
+  --color-turmeric: #ffd970; /* WARM, demo banner */
+  --color-steel: #dbe2ea; /* COLD */
+  --color-signal: #c81d25; /* overdue, errors, destructive */
+  --color-teal: #0a6a6a; /* due today, links */
+  --color-leaf: #dcf2e3; /* the rep's own messages and the draft */
+  --color-leaf-deep: #1e5b37;
+}
+
+@utility cond {
+  font-stretch: 68%;
+}
+
 @layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-paper text-ink antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-teal;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 /* Shared controls. Phone first: every tap target is at least 44 px high. */
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-white transition-colors hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink/25 bg-white px-4 text-sm font-semibold text-ink transition-colors hover:border-ink/50 disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-link {
-    @apply inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-blue-700 underline-offset-2 hover:underline disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-teal underline-offset-4 hover:underline disabled:opacity-45;
   }
   .field {
-    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-2 focus:outline-blue-600/30;
+    @apply block w-full rounded-lg border-[1.5px] border-line bg-white px-3 py-2.5 text-base text-ink placeholder:text-mute/80 hover:border-ink/30 focus:border-teal focus:outline-none focus-visible:outline-none focus:ring-3 focus:ring-teal/20 disabled:bg-paper disabled:text-mute;
+  }
+  [data-invalid] .field {
+    @apply border-signal;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-slate-800;
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .panel {
+    @apply rounded-xl border border-line bg-white;
+  }
+  /* "Demo" banner: hazard-tape edge, as on a machine that's not yet in production. */
+  .hazard {
+    background-image: repeating-linear-gradient(-45deg, var(--color-ink) 0 6px, var(--color-turmeric) 6px 12px);
   }
 }

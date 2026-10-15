@@ -54,7 +54,7 @@ export function AddMessages({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="panel p-4">
       <label htmlFor="paste" className="label">
         Paste new WhatsApp messages
       </label>
@@ -71,21 +71,21 @@ export function AddMessages({
         className="field font-mono text-sm"
         autoFocus
       />
-      <p className={cn("mt-2 text-xs", tooLong ? "font-semibold text-red-700" : "text-slate-500")}>
+      <p className={cn("mt-1.5 text-xs tabular-nums", tooLong ? "font-semibold text-signal" : "text-mute")}>
         {text.length.toLocaleString("en-IN")} / {MAX_PASTE_CHARS.toLocaleString("en-IN")} characters
       </p>
 
       {preview && (
-        <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm" aria-live="polite">
+        <div className="mt-3 rounded-lg border border-line bg-paper/70 p-3 text-sm" aria-live="polite">
           {senders.length === 0 ? (
-            <p className="text-slate-700">No messages found yet.</p>
+            <p className="text-ink-soft">No messages found yet.</p>
           ) : (
             <>
-              <p className="font-semibold">
+              <p className="font-bold">
                 {plural(senders.length, "message")} found ({buyerCount} from {firstName}, {senders.length - buyerCount} from {repName})
               </p>
-              <p className="mt-0.5 text-xs text-slate-600">Tap a name to switch who sent it.</p>
-              <ul className="mt-2 max-h-64 space-y-1.5 overflow-y-auto">
+              <p className="mt-0.5 text-xs text-ink-soft">Tap a name to switch who sent it.</p>
+              <ul className="mt-2 max-h-72 space-y-1 overflow-y-auto">
                 {preview.messages.map((m, i) => {
                   const sender = senders[i]!;
                   const unsure = !m.senderKnown && switched[i] === undefined;
@@ -95,9 +95,9 @@ export function AddMessages({
                         type="button"
                         onClick={() => setSwitched((s) => ({ ...s, [i]: sender === "rep" ? "buyer" : "rep" }))}
                         className={cn(
-                          "inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-semibold ring-1 ring-inset",
-                          sender === "rep" ? "bg-emerald-100 text-emerald-900 ring-emerald-300" : "bg-white text-slate-900 ring-slate-300",
-                          unsure && "ring-2 ring-amber-500",
+                          "inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-bold ring-1 ring-inset",
+                          sender === "rep" ? "bg-leaf text-leaf-deep ring-leaf-deep/30" : "bg-white text-ink ring-ink/25",
+                          unsure && "ring-2 ring-saffron-deep ring-offset-1",
                         )}
                         aria-label={`Sent by ${sender === "rep" ? repName : firstName}. Switch`}
                         title="Switch who sent this"
@@ -105,24 +105,24 @@ export function AddMessages({
                         {sender === "rep" ? repName : firstName}
                         <ArrowLeftRight className="size-3" aria-hidden />
                       </button>
-                      <span className="line-clamp-2 min-w-0 pt-1 text-slate-700">{m.text}</span>
+                      <span className="line-clamp-2 min-w-0 pt-3 text-ink-soft">{m.text}</span>
                     </li>
                   );
                 })}
               </ul>
               {guessed > 0 && (
-                <p className="mt-2 text-xs font-medium text-amber-800">
+                <p className="mt-2 text-xs font-semibold text-saffron-deep">
                   {guessed === 1 ? "This message didn't say who sent it" : `${guessed} messages didn't say who sent them`}, so we guessed
                   (outlined). Please check.
                 </p>
               )}
             </>
           )}
-          {tooMany && <p className="mt-2 font-semibold text-red-700">Paste at most {MAX_PASTE_MESSAGES} messages at a time.</p>}
+          {tooMany && <p className="mt-2 font-semibold text-signal">Paste at most {MAX_PASTE_MESSAGES} messages at a time.</p>}
         </div>
       )}
 
-      {draftEdited && <p className="mt-3 text-xs text-amber-800">New messages replace your edited draft with a fresh one.</p>}
+      {draftEdited && <p className="mt-3 text-xs font-medium text-saffron-deep">New messages replace your edited draft with a fresh one.</p>}
 
       <div className="mt-3 flex gap-2">
         <button

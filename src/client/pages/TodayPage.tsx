@@ -39,24 +39,29 @@ export function TodayPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 pb-10">
       {/* Kept short so the top 5 follow-ups fit on a phone screen without scrolling (PRD §4.3). */}
-      <header className="border-b border-slate-200 pt-2 pb-2">
+      <header className="pt-2.5">
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-lg font-bold">
-            Follow-ups{todayIso && <span className="font-normal text-slate-600"> · {shortDate(todayIso)}</span>}
+          <h1 className="flex items-baseline gap-2.5">
+            <span className="cond text-[32px] leading-none font-extrabold">Follow-ups</span>
+            {todayIso && <span className="text-sm font-medium text-ink-soft">{shortDate(todayIso)}</span>}
           </h1>
-          <Link to="/new" className="btn-primary min-h-10 shrink-0 px-3">
+          <Link to="/new" className="btn-primary shrink-0 px-3.5">
             <Plus className="size-4" aria-hidden /> New lead
           </Link>
         </div>
-        <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <RepSwitcher rep={rep} onChange={setRep} />
-          {meta.data ? <SummaryStrip.Counts meta={meta.data} rep={rep} /> : <div className="h-5 w-48 animate-pulse rounded bg-slate-200" />}
+          {meta.data ? <SummaryStrip.Counts meta={meta.data} rep={rep} /> : <div className="h-9 w-40 animate-pulse rounded bg-steel" />}
         </div>
-        {meta.data && !rep && <SummaryStrip.PerRep meta={meta.data} onPickRep={setRep} />}
+        {meta.data && !rep && (
+          <div className="mt-2">
+            <SummaryStrip.PerRep meta={meta.data} onPickRep={setRep} />
+          </div>
+        )}
       </header>
 
       {reset.isSuccess && (
-        <p role="status" className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+        <p role="status" className="mt-3 rounded-lg bg-leaf px-3 py-2.5 text-sm font-semibold text-leaf-deep">
           Demo data restored.
         </p>
       )}
@@ -69,9 +74,9 @@ export function TodayPage() {
         {today.isError && <ErrorState message={today.error.message} onRetry={() => today.refetch()} />}
         {today.data && todayIso && (
           today.data.leads.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center">
-              <p className="text-lg font-semibold">No follow-ups today 🎉</p>
-              <p className="mt-1 text-sm text-slate-600">
+            <div className="rounded-xl border-[1.5px] border-dashed border-ink/25 bg-white px-6 pt-7 pb-4 text-center">
+              <p className="cond text-2xl font-extrabold">No follow-ups today 🎉</p>
+              <p className="mt-1 text-sm text-ink-soft">
                 {repLabel(rep)} {rep ? "is" : "are"} all caught up.
               </p>
               <button type="button" className="btn-link" onClick={() => setUpcomingOpen(true)}>
@@ -80,18 +85,18 @@ export function TodayPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {groupLeads(today.data.leads).map(({ group, leads }) => (
+              {numbered(groupLeads(today.data.leads)).map(({ group, leads, start }) => (
                 <div key={group}>
-                  <h3 className={cn("mb-1.5 text-xs font-bold tracking-wider uppercase", group === "needs_reply" ? "text-red-800" : "text-slate-600")}>
-                    {GROUP_LABELS[group]} <span className="font-normal text-slate-500">({leads.length})</span>
+                  <h3 className="mb-1.5 flex items-baseline gap-2 text-sm font-bold text-ink">
+                    {GROUP_LABELS[group]} <span className="text-xs font-semibold text-mute tabular-nums">{leads.length}</span>
                   </h3>
-                  <ul className="space-y-2">
-                    {leads.map((lead) => (
+                  <ol className="space-y-1.5" start={start + 1}>
+                    {leads.map((lead, i) => (
                       <li key={lead.id}>
-                        <LeadCard lead={lead} today={todayIso} showRep={showRep} />
+                        <LeadCard lead={lead} today={todayIso} showRep={showRep} position={start + i + 1} />
                       </li>
                     ))}
-                  </ul>
+                  </ol>
                 </div>
               ))}
             </div>
@@ -108,7 +113,7 @@ export function TodayPage() {
       >
         {upcoming.isError && <ErrorState message={upcoming.error.message} onRetry={() => upcoming.refetch()} />}
         {upcoming.data && (upcoming.data.leads.length === 0 ? (
-          <p className="text-sm text-slate-600">Nothing due in the next 7 days.</p>
+          <p className="px-1 py-2 text-sm text-ink-soft">Nothing due in the next 7 days.</p>
         ) : (
           <CompactList leads={upcoming.data.leads} showRep={showRep} showDate />
         ))}
@@ -120,7 +125,7 @@ export function TodayPage() {
       </Collapsible>
 
       <footer className="mt-8 text-center">
-        <button type="button" className="btn-link text-slate-600" onClick={() => setConfirmReset(true)} disabled={reset.isPending}>
+        <button type="button" className="btn-link text-ink-soft" onClick={() => setConfirmReset(true)} disabled={reset.isPending}>
           {reset.isPending ? "Restoring…" : "Reset demo data"}
         </button>
         {reset.isError && <ErrorState message={reset.error.message} />}
@@ -143,9 +148,19 @@ export function TodayPage() {
   );
 }
 
+/** Today's list is one queue across the groups: each group's leads continue the count. */
+function numbered<T extends { leads: unknown[] }>(groups: T[]): (T & { start: number })[] {
+  let start = 0;
+  return groups.map((g) => {
+    const out = { ...g, start };
+    start += g.leads.length;
+    return out;
+  });
+}
+
 function ListSkeleton() {
   return (
-    <div className="space-y-2" aria-label="Loading follow-ups">
+    <div className="space-y-1.5" aria-label="Loading follow-ups">
       {[0, 1, 2, 3].map((i) => (
         <LeadCardSkeleton key={i} />
       ))}
@@ -170,24 +185,25 @@ function Collapsible({
 }) {
   const id = `section-${title.replace(/\s+/g, "-").toLowerCase()}`;
   return (
-    <section className="mt-6 rounded-lg border border-slate-200 bg-white">
+    <section className="panel mt-4 overflow-hidden">
       <h2>
         <button
           type="button"
           aria-expanded={open}
           aria-controls={id}
           onClick={onToggle}
-          className="flex min-h-12 w-full items-center justify-between px-4 text-left font-semibold"
+          className="flex min-h-13 w-full items-center justify-between gap-3 px-4 text-left hover:bg-paper/60"
         >
-          <span>
-            {title} {count !== undefined && <span className="font-normal text-slate-500">({count})</span>}
-            {hint && <span className="ml-1 text-sm font-normal text-slate-500">· {hint}</span>}
+          <span className="flex items-baseline gap-2">
+            <span className="cond text-xl font-extrabold">{title}</span>
+            {count !== undefined && <span className="text-xs font-semibold text-mute tabular-nums">{count}</span>}
+            {hint && <span className="text-sm text-mute">{hint}</span>}
           </span>
-          <ChevronDown className={cn("size-5 text-slate-500 transition", open && "rotate-180")} aria-hidden />
+          <ChevronDown className={cn("size-5 text-ink-soft transition-transform", open && "rotate-180")} aria-hidden />
         </button>
       </h2>
       {open && (
-        <div id={id} className="border-t border-slate-200 p-3">
+        <div id={id} className="border-t border-line p-3">
           {children}
         </div>
       )}
@@ -197,16 +213,17 @@ function Collapsible({
 
 function CompactList({ leads, showRep, showDate }: { leads: Lead[]; showRep: boolean; showDate?: boolean }) {
   return (
-    <ul className="divide-y divide-slate-100">
+    <ul className="divide-y divide-line/70">
       {leads.map((lead) => (
         <li key={lead.id}>
-          <Link to={`/lead/${lead.id}`} className="flex min-h-12 items-center gap-2 py-2 hover:bg-slate-50">
-            {showDate && <span className="w-20 shrink-0 text-xs font-semibold text-slate-600">{shortDate(lead.nextFollowUpDate)}</span>}
+          <Link to={`/lead/${lead.id}`} className="-mx-1 flex min-h-12 items-center gap-2.5 rounded-md px-1 py-2 hover:bg-paper/70">
+            {showDate && <span className="cond w-[4.5rem] shrink-0 text-[15px] font-bold text-ink-soft">{shortDate(lead.nextFollowUpDate)}</span>}
             <TagBadge tag={lead.tag} />
             <span className="min-w-0 flex-1 truncate text-sm">
-              <span className="font-semibold">{lead.name}</span> <span className="text-slate-500">· {lead.company}</span>
+              <span className="font-bold">{lead.name}</span>
+              <span className="ml-1.5 text-mute">{lead.company}</span>
             </span>
-            {showRep && <span className="shrink-0 text-xs text-slate-500">{lead.repName}</span>}
+            {showRep && <span className="shrink-0 text-xs font-medium text-mute">{lead.repName}</span>}
           </Link>
         </li>
       ))}
@@ -232,7 +249,7 @@ function SearchableList({ leads, showRep }: { leads: Lead[]; showRep: boolean })
     <div>
       <label className="relative block">
         <span className="sr-only">Search leads</span>
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
+        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-mute" aria-hidden />
         <input
           type="search"
           value={q}
@@ -241,7 +258,7 @@ function SearchableList({ leads, showRep }: { leads: Lead[]; showRep: boolean })
           className="field pl-9"
         />
       </label>
-      <p className="mt-2 text-xs text-slate-500">{plural(shown.length, "lead")}</p>
+      <p className="mt-2 mb-1 text-xs font-medium text-mute">{plural(shown.length, "lead")}</p>
       <CompactList leads={shown} showRep={showRep} />
     </div>
   );

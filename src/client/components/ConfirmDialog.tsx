@@ -36,19 +36,19 @@ export function ConfirmDialog({
       ref={ref}
       // Fires on Esc too. Only counts as "cancel" if the parent still thinks it's open.
       onClose={() => open && onCancel()}
-      className="m-auto w-[min(92vw,26rem)] rounded-xl bg-white p-0 text-slate-900 shadow-xl backdrop:bg-slate-900/40"
+      className="m-auto w-[min(92vw,26rem)] rounded-xl border border-line bg-white p-0 text-ink shadow-[0_24px_48px_-12px_rgb(20_33_61/0.35)] backdrop:bg-ink/50"
     >
       <div className="p-5">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <div className="mt-2 text-sm text-slate-700">{children}</div>
-        <div className="mt-5 flex justify-end gap-2">
+        <h2 className="cond text-2xl leading-tight font-extrabold">{title}</h2>
+        <div className="mt-2 text-sm leading-relaxed text-ink-soft">{children}</div>
+        <div className="mt-6 flex justify-end gap-2">
           <button type="button" onClick={onCancel} className="btn-secondary">
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={cn("btn-primary", danger && "bg-red-700 hover:bg-red-800")}
+            className={cn("btn-primary", danger && "bg-signal hover:bg-signal/85")}
             autoFocus
           >
             {confirmLabel}

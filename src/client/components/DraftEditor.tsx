@@ -73,12 +73,12 @@ export function DraftEditor({
   }
 
   return (
-    <section aria-labelledby="draft-heading" className="rounded-xl border border-slate-200 bg-white p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 id="draft-heading" className="font-semibold">
+    <section aria-labelledby="draft-heading" className="panel p-4">
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        <h2 id="draft-heading" className="cond text-xl font-extrabold">
           Draft message
         </h2>
-        <span className="text-xs text-slate-500" aria-live="polite">
+        <span className="text-xs font-medium text-mute" aria-live="polite">
           {saving ? "Saving…" : edited ? "Edited" : "Written by the agent"}
         </span>
       </div>
@@ -94,17 +94,17 @@ export function DraftEditor({
         rows={5}
         maxLength={1000}
         disabled={busy}
-        className="field field-sizing-content min-h-32 resize-y leading-relaxed"
+        className="field field-sizing-content min-h-32 resize-y border-leaf-deep/25 bg-leaf/60 leading-relaxed hover:border-leaf-deep/45 focus:bg-white"
       />
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button type="button" onClick={copy} className="btn-secondary" disabled={busy || !text.trim()}>
-          {copied ? <Check className="size-4 text-emerald-700" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+          {copied ? <Check className="size-4 text-leaf-deep" aria-hidden /> : <Copy className="size-4" aria-hidden />}
           {copied ? "Copied" : "Copy"}
         </button>
         <button type="button" onClick={() => onMarkSent(text)} className="btn-primary" disabled={busy || !text.trim()}>
           <Send className="size-4" aria-hidden /> Mark as sent
         </button>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-4">
           <button
             type="button"
             onClick={() => setRewriteOpen((o) => !o)}
@@ -124,13 +124,13 @@ export function DraftEditor({
       {rewriteOpen && (
         <form
           id="rewrite-panel"
-          className="mt-3 rounded-lg bg-slate-50 p-3"
+          className="mt-3 rounded-lg border border-line bg-paper/70 p-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (instruction.trim()) regenerate(instruction);
           }}
         >
-          <p className="text-sm font-medium text-slate-800">How should the new draft read?</p>
+          <p className="text-sm font-bold text-ink">How should the new draft read?</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {QUICK_INSTRUCTIONS.map((q) => (
               <button
@@ -138,13 +138,13 @@ export function DraftEditor({
                 type="button"
                 onClick={() => regenerate(q)}
                 disabled={busy}
-                className="min-h-9 rounded-full border border-slate-300 bg-white px-3 text-xs font-medium text-slate-800 hover:border-slate-400 disabled:opacity-50"
+                className="min-h-11 rounded-full border border-ink/20 bg-white px-3.5 text-sm font-medium text-ink transition-colors hover:border-ink/50 disabled:opacity-45"
               >
                 {q}
               </button>
             ))}
           </div>
-          <label htmlFor="instruction" className="mt-3 block text-xs text-slate-600">
+          <label htmlFor="instruction" className="mt-3 block text-xs font-medium text-ink-soft">
             Or say it in your words
           </label>
           <div className="mt-1 flex gap-2">
@@ -154,20 +154,20 @@ export function DraftEditor({
               onChange={(e) => setInstruction(e.target.value)}
               maxLength={MAX_INSTRUCTION_CHARS}
               placeholder="e.g. mention the free installation, ask for a site visit"
-              className="field min-w-0 flex-1 py-2 text-sm"
+              className="field min-w-0 flex-1 py-2"
               disabled={busy}
             />
             <button type="submit" className="btn-primary shrink-0" disabled={busy || !instruction.trim()}>
               Rewrite
             </button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-mute">
             The agent still won't invent prices, discounts or dates that aren't in the chat.
           </p>
         </form>
       )}
 
-      <p className="mt-2 text-xs text-slate-500">Copy, send it from your WhatsApp, then tap Mark as sent.</p>
+      <p className="mt-1 text-xs text-mute">Copy, send it from your WhatsApp, then tap Mark as sent.</p>
 
       <ConfirmDialog
         open={pending !== null}
