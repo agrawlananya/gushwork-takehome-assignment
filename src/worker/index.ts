@@ -8,6 +8,7 @@ import {
   DraftInput,
   LeadsQuery,
   NewLeadInput,
+  RegenerateInput,
   type Counts,
   type LeadDetail,
   type LeadList,
@@ -209,11 +210,17 @@ app.post("/leads/:id/sent", valid("json", DraftInput), async (c) => {
   return c.json((await leadDetail(ctx, row.id))!);
 });
 
+/** Re-run the agent. An optional `instruction` ("make it shorter") shapes the new draft. */
 app.post("/leads/:id/regenerate", async (c) => {
   const ctx = c.var.ctx;
   const row = await getLead(ctx.db, c.req.param("id"));
   if (!row) return apiError(c, 404, "NOT_FOUND", "Lead not found");
-  await rerunAgent(ctx, row.id, "regenerate", repName(row.repId));
+
+  // The body is optional: plain Regenerate sends none.
+  const body = RegenerateInput.safeParse(await c.req.json().catch(() => ({})));
+  if (!body.success) return apiError(c, 400, "VALIDATION", body.error.issues[0]?.message ?? "Invalid instruction");
+
+  await rerunAgent(ctx, row.id, "regenerate", repName(row.repId), body.data.instruction);
   return c.json((await leadDetail(ctx, row.id))!);
 });
 

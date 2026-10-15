@@ -3,7 +3,7 @@ import type { AgentSource, Source, Tag } from "../../shared/types";
 import { checkOutput } from "./checks";
 import { computeFacts, firstName, type AgentLead, type AgentMessage, type Facts } from "./facts";
 import { RULES_MODEL, ruleEngine } from "./fallback";
-import { buildSystemPrompt, buildUserPrompt, PROMPT_VERSION, type Company } from "./prompt";
+import { buildSystemPrompt, buildUserPrompt, PROMPT_VERSION, withDraftInstruction, type Company } from "./prompt";
 import { AI_TIMEOUT_MS, callModel, type AgentProvider } from "./providers";
 import type { AgentOutput } from "./schema";
 
@@ -43,6 +43,8 @@ export type ScoreOptions = {
   beforeCall?: (provider: AgentProvider) => Promise<void>;
   /** Total time for all AI calls. After it, the backup rules answer (PRD §9.6: slow AI → rules). */
   deadlineMs?: number;
+  /** Optional "Regenerate with instructions" text from the rep. Shapes the draft only. */
+  draftInstruction?: string;
 };
 
 /** The rep waits on screen while the agent runs, so all AI calls together get this long. */
@@ -105,7 +107,7 @@ async function tryProviders(
   attempts: AgentAttempt[],
 ): Promise<{ output: AgentOutput; source: "ai"; provider: string; model: string } | null> {
   const system = buildSystemPrompt(opts.company);
-  const user = buildUserPrompt(lead, facts, messages);
+  const user = withDraftInstruction(buildUserPrompt(lead, facts, messages), opts.draftInstruction);
   const ctx = {
     buyerFirstName: firstName(lead.name),
     chatText: messages.map((m) => m.text).join("\n"),

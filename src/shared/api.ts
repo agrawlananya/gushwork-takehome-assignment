@@ -55,6 +55,21 @@ export const DraftInput = z.object({
   draft: z.string().trim().min(1, "The draft is empty").max(1000),
 });
 
+export const MAX_INSTRUCTION_CHARS = 200;
+
+/** Optional "Regenerate with instructions": how the rep wants the next draft written. */
+export const RegenerateInput = z.object({
+  instruction: z
+    .string()
+    .trim()
+    .max(MAX_INSTRUCTION_CHARS, `Keep instructions under ${MAX_INSTRUCTION_CHARS} characters`)
+    .optional()
+    .transform((s) => s || undefined),
+});
+
+/** Quick instructions shown as chips. */
+export const QUICK_INSTRUCTIONS = ["Make it shorter", "Push for a quick call", "More formal", "Write it in Hinglish"] as const;
+
 // ---- Responses ----
 
 export type Lead = {

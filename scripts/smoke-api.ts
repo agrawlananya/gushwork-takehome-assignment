@@ -127,6 +127,12 @@ check("bad phone → 400 (PRD N-2)", badPhone.status === 400, badPhone.data.erro
 const regen = await call<LeadDetail>("POST", "/leads/L13/regenerate");
 check("regenerate", regen.status === 200 && regen.data.lead.draftStatus === "ai", `${regen.data.lead.agentSource} · ${regen.ms} ms`);
 
+const rewritten = await call<LeadDetail>("POST", "/leads/L13/regenerate", { instruction: "Make it shorter" });
+check("rewrite with an instruction", rewritten.status === 200 && rewritten.data.lead.draft.length > 0, `${rewritten.data.lead.draft.length} chars · ${rewritten.ms} ms`);
+
+const longInstruction = await call<ApiError>("POST", "/leads/L13/regenerate", { instruction: "x".repeat(201) });
+check("instruction over 200 chars → 400", longInstruction.status === 400, longInstruction.data.error?.message);
+
 // ---- Leave the demo clean ----
 const resetAgain = await call<{ leads: number }>("POST", "/demo/reset");
 check("reset again", resetAgain.data.leads === 24);

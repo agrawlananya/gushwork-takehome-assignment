@@ -27,13 +27,19 @@ export function agentLead(row: Pick<LeadRow, "name" | "company" | "source" | "re
 }
 
 /** Scores a lead that may not be saved yet (new leads are scored before insert). */
-export async function score(ctx: RequestContext, lead: AgentLead, messages: readonly AgentMessage[]): Promise<AgentResult> {
+export async function score(
+  ctx: RequestContext,
+  lead: AgentLead,
+  messages: readonly AgentMessage[],
+  draftInstruction?: string,
+): Promise<AgentResult> {
   const aiAllowed = await takeAiBudget(ctx.db, ctx.ip, ctx.now, Number(ctx.env.AI_DAILY_LIMIT) || 400);
   const result = await scoreLead(lead, messages, {
     providers: createProviders(ctx.env),
     company,
     today: ctx.today,
     aiAllowed,
+    draftInstruction,
   });
   const used = result.attempts.map((a) => `${a.provider}${a.ok ? "" : "✗"}`).join(" → ");
   console.log(`agent ${lead.company}: ${result.output.tag} via ${used}, ${result.attempts.reduce((s, a) => s + a.latencyMs, 0)} ms`);
@@ -41,12 +47,19 @@ export async function score(ctx: RequestContext, lead: AgentLead, messages: read
 }
 
 /** Re-runs the agent for a saved lead and saves the result. Returns the updated row. */
-export async function rerunAgent(ctx: RequestContext, leadId: string, trigger: AgentTrigger, repName: string): Promise<LeadRow> {
+/** `draftInstruction`: the rep's optional "Regenerate with instructions" text. */
+export async function rerunAgent(
+  ctx: RequestContext,
+  leadId: string,
+  trigger: AgentTrigger,
+  repName: string,
+  draftInstruction?: string,
+): Promise<LeadRow> {
   const row = await getLead(ctx.db, leadId);
   if (!row) throw new Error(`Lead ${leadId} not found`);
   const messages = await getMessages(ctx.db, leadId);
 
-  const result = await score(ctx, agentLead(row, repName), messages);
+  const result = await score(ctx, agentLead(row, repName), messages, draftInstruction);
   const fields = agentFields(result, { tag: row.tag, needsReply: row.needsReply }, ctx.now);
   const runs = agentRunRows(leadId, trigger, result, ctx.now);
 

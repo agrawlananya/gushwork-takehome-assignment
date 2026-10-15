@@ -46,10 +46,11 @@ export function LeadPage() {
     },
   });
   const regenerate = useMutation({
-    mutationFn: () => api.regenerate(id),
-    onSuccess: (data) => {
+    mutationFn: (instruction?: string) => api.regenerate(id, instruction),
+    onSuccess: (data, instruction) => {
       applied(data);
-      setNotice({ text: data.lead.changeNote ? `New draft ready · ${data.lead.changeNote}` : "New draft ready." });
+      const what = instruction ? `Rewritten (“${instruction}”)` : "New draft ready";
+      setNotice({ text: data.lead.changeNote ? `${what} · ${data.lead.changeNote}` : `${what}.` });
     },
   });
   const addMessages = useMutation({
@@ -156,9 +157,9 @@ export function LeadPage() {
             setNotice(null);
             markSent.mutate(draft);
           }}
-          onRegenerate={() => {
+          onRegenerate={(instruction) => {
             setNotice(null);
-            regenerate.mutate();
+            regenerate.mutate(instruction);
           }}
         />
       </div>

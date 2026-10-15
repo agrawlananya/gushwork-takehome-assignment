@@ -54,7 +54,8 @@ export const api = {
     request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/messages`, { text, senders }),
   saveDraft: (id: string, draft: string) => request<LeadDetail>("PATCH", `/leads/${encodeURIComponent(id)}/draft`, { draft }),
   markSent: (id: string, draft: string) => request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/sent`, { draft }),
-  regenerate: (id: string) => request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/regenerate`),
+  regenerate: (id: string, instruction?: string) =>
+    request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/regenerate`, instruction ? { instruction } : {}),
   removeMessage: (id: string, messageId: number) =>
     request<LeadDetail>("DELETE", `/leads/${encodeURIComponent(id)}/messages/${messageId}`),
   resetDemo: () => request<{ ok: boolean; leads: number }>("POST", "/demo/reset"),
