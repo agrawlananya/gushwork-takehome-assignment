@@ -141,7 +141,7 @@ Full details: [Product requirements](01-PRD.md) · [Technical design](02-Technic
 - **Data privacy** — demo data is fake. Google's free Gemini terms allow prompts to be used to improve their products, so a real launch would move to a paid, no-training tier.
 - Leads can't be deleted or closed in the MVP; buyers who said no simply get a far-off check-in date.
 
-## What I'd build next
+## Future Add-ons
 
 1. **WhatsApp Business API** — read chats and send drafts from the app (no copy-paste).
 2. **Excel / Google Sheet import** and sync for leads.
