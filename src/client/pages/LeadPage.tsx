@@ -49,6 +49,13 @@ export function LeadPage() {
     mutationFn: (instruction?: string) => api.regenerate(id, instruction),
     onSuccess: (data, instruction) => {
       applied(data);
+      // The backup rules ignore instructions; say so instead of implying the AI rewrote it.
+      if (data.lead.agentSource === "rules") {
+        setNotice({
+          text: `The AI isn't available right now, so the backup rules wrote a basic draft${instruction ? " and your instruction wasn't applied" : ""}. Try again in a minute.`,
+        });
+        return;
+      }
       const what = instruction ? `Rewritten (“${instruction}”)` : "New draft ready";
       setNotice({ text: data.lead.changeNote ? `${what} · ${data.lead.changeNote}` : `${what}.` });
     },
