@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalisePhone, formatPhone } from "@shared/phone";
 import { parseCsv } from "@shared/sampleData";
-import { checkOutput, madeUpNumbers, madeUpWeekdays, repeatsSentMessage } from "../../src/worker/agent/checks";
+import { checkOutput, madeUpClaims, madeUpNumbers, madeUpWeekdays, repeatsSentMessage } from "../../src/worker/agent/checks";
 import { computeFacts, contactFromMessages } from "../../src/worker/agent/facts";
 import { ruleEngine } from "../../src/worker/agent/fallback";
 import { buildUserPrompt, withDraftInstruction } from "../../src/worker/agent/prompt";
@@ -145,6 +145,23 @@ describe("checkOutput", () => {
     expect(madeUpNumbers("Best price ₹1,30,000 for 2 units", "₹1,45,000 per unit")).toEqual(["130000"]);
     expect(madeUpNumbers("₹1,45,000 per unit, 2 units", "₹1,45,000 per unit")).toEqual([]);
     expect(madeUpNumbers("₹145000", "₹1,45,000")).toEqual([]);
+  });
+
+  it("flags 'confirmed'/'booked' claims the chat doesn't support", () => {
+    const l12 = "Day after tomorrow works for us, 10 am at our Chakan plant. Please confirm the engineer.\nNoted, will check engineer availability and confirm by evening.";
+    expect(madeUpClaims("Sunita, tomorrow at 10 am is confirmed for the visit.", l12)).toEqual(["confirmed"]);
+    expect(madeUpClaims("Sunita, I'm confirming the engineer now. Is 10 am still good?", l12)).toEqual([]);
+    expect(madeUpClaims("Kiran, budget approved — great.", "Budget approved by management.")).toEqual([]);
+  });
+
+  it("flags generic filler openers", () => {
+    for (const draft of [
+      "Neha ji, hope you are doing well. Can you share the other quote?",
+      "Neha ji, just checking in on the strapping machines?",
+      "Hi Neha ji, any update?",
+    ]) {
+      expect(checkOutput({ ...good, draft }, ctx).problems, draft).toHaveLength(1);
+    }
   });
 
   it("flags a weekday the buyer never mentioned", () => {

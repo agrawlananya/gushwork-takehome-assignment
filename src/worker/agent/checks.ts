@@ -10,6 +10,10 @@ export const MAX_DRAFT_LINES = 6;
 const TIME_WORDS =
   /\b(today|tonight|yesterday|tomorrow|ago|(last|this|next|a|one) (week|month)|\d+\s*(day|days|week|weeks|month|months)|\d{4}-\d{2}-\d{2})\b/i;
 
+// Generic openers good reps don't use (prompt section "Write like a top B2B sales rep").
+const FILLER =
+  /\b(hope (?:you are|you're|all is|everything is) (?:doing )?(?:well|good|fine)|hope this (?:message )?finds you|just checking in|just following up|just wanted to (?:check|follow)|any update\?)/i;
+
 export type CheckContext = {
   buyerFirstName: string;
   /** All chat text, to check that every number in the draft is real. */
@@ -52,6 +56,17 @@ export function checkOutput(out: AgentOutput, ctx: CheckContext): CheckResult {
   if (!out.draft.toLowerCase().includes(ctx.buyerFirstName.toLowerCase())) {
     problems.push(`The draft must start with the buyer's first name, ${ctx.buyerFirstName}.`);
   }
+  const claims = madeUpClaims(out.draft, ctx.chatText);
+  if (claims.length) {
+    problems.push(
+      `The draft says something is ${claims.join("/")}, but the chat doesn't show that. Don't claim it; say the rep is working on it and ask one question.`,
+    );
+  }
+
+  const filler = out.draft.match(FILLER);
+  if (filler) {
+    problems.push(`The draft uses a filler phrase ("${filler[0]}"). Open with something useful about the buyer's need instead.`);
+  }
   if (repeatsSentMessage(out.draft, ctx.recentRepMessages ?? [])) {
     problems.push("The draft repeats a message the rep already sent. Write the next follow-up instead, building on that message.");
   }
@@ -73,6 +88,17 @@ export function repeatsSentMessage(draft: string, sent: readonly string[]): bool
 export function madeUpNumbers(draft: string, chatText: string): string[] {
   const inChat = new Set(numbersIn(chatText));
   return [...new Set(numbersIn(draft).filter((n) => Number(n) >= 100 && !inChat.has(n)))];
+}
+
+const CLAIMS = /\b(confirmed|booked|scheduled|approved|dispatched|shipped|finali[sz]ed)\b/gi;
+
+/**
+ * "Done" words in the draft (confirmed, booked, approved…) that the chat never uses.
+ * Catches the AI promising a visit or price is settled when the rep only said they'd check.
+ */
+export function madeUpClaims(draft: string, chatText: string): string[] {
+  const inChat = new Set([...chatText.matchAll(CLAIMS)].map((m) => m[0].toLowerCase()));
+  return [...new Set([...draft.matchAll(CLAIMS)].map((m) => m[0].toLowerCase()).filter((w) => !inChat.has(w)))];
 }
 
 const WEEKDAYS = /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/gi;

@@ -70,7 +70,7 @@ migrations/ tests/unit/ tests/e2e/smoke.spec.ts  wrangler.jsonc  README.md
 - `npm run typecheck` — `tsc -b` over app / worker / node projects (TypeScript 7)
 - `npm test` — Vitest unit tests (`tests/unit`)
 - `npm run cf-typegen` — regenerate `src/worker/worker-configuration.d.ts` after changing `wrangler.jsonc` or `.dev.vars`
-- `npm run db:generate` → `npm run db:migrate:local` / `db:migrate:remote`
+- `npm run db:generate` → `npm run db:migrate:local` / `db:migrate:remote` (if local API calls fail with "no such table", run `db:migrate:local` — the local DB file is keyed by `database_id`)
 - `npm run deploy` — build + `wrangler deploy`
 - `npx tsx scripts/eval.ts [--rules] [--provider=google|groq] [--only=L01,L04]` — agent accuracy vs `data/labels.csv`; saves `eval-results/latest.json`
 - `npx tsx scripts/make-snapshot.ts [--from-eval]` — writes `data/snapshot.json`; re-run whenever `PROMPT_VERSION` changes

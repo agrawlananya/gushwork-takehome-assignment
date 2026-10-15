@@ -102,7 +102,7 @@ export function ruleEngine(lead: AgentLead, facts: Facts, messages: readonly Age
       reason: `Buyer has gone quiet on the ${machine}.`,
       needs_reply: false,
       buyer_said_no: false,
-      draft: `Hi ${greeting}, hope all is well.\nAre you still looking at a ${machine}? Happy to help whenever you're ready.`,
+      draft: `Hi ${greeting}, is the ${machine} still on your list for this season?\nIf the timing has moved, just tell me when to check back.`,
     };
   }
 
@@ -148,7 +148,7 @@ export function ruleEngine(lead: AgentLead, facts: Facts, messages: readonly Age
           : `Early conversation about the ${machine}.`,
     needs_reply: false,
     buyer_said_no: false,
-    draft: `Hi ${greeting}, just checking in on the ${machine}.\nDo you have any questions I can help with, or should we set up a quick call?`,
+    draft: `Hi ${greeting}, to help you decide on the ${machine}:\nwould a short call or a video of it running on a line like yours be more useful?`,
   };
 }
 
