@@ -1,0 +1,25 @@
+id,name,company,phone,source,rep,last_contact_days_ago
+L01,Ramesh Gupta,Gupta Namkeen,+91 90000 00001,IndiaMART,Priya,1
+L02,Farah Shaikh,Shaikh Pharma Packaging,+91 90000 00002,Trade show,Rahul,4
+L03,Vikram Rao,Rao Agro Exports,+91 90000 00003,Website,Sneha,9
+L04,Neha Jain,Jain Textiles,+91 90000 00004,Referral,Arjun,2
+L05,Sanjay Patel,Patel Dairy,+91 90000 00005,IndiaMART,Imran,20
+L06,Anita Desai,Desai Spices,+91 90000 00006,Cold call,Priya,35
+L07,Mohammed Ali,Ali Bakers,+91 90000 00007,WhatsApp inbound,Rahul,0
+L08,Kiran Reddy,Reddy Beverages,+91 90000 00008,Trade show,Sneha,6
+L09,Pooja Mehta,Mehta Cosmetics,+91 90000 00009,Website,Arjun,12
+L10,Harish Kumar,Kumar Hardware,+91 90000 00010,Referral,Imran,45
+L11,Deepak Singh,Singh Logistics,+91 90000 00011,IndiaMART,Priya,3
+L12,Sunita Iyer,Iyer Foods,+91 90000 00012,Trade show,Rahul,1
+L13,Rajesh Verma,Verma Plastics,+91 90000 00013,IndiaMART,Sneha,1
+L14,Meera Nair,Nair Exports,+91 90000 00014,Website,Arjun,2
+L15,Ajay Thakur,Thakur Snacks,+91 90000 00015,Cold call,Imran,18
+L16,Lakshmi Krishnan,LK Garments,+91 90000 00016,Trade show,Priya,5
+L17,Rohit Agarwal,Agarwal Paper,+91 90000 00017,Referral,Rahul,25
+L18,Nikhil Joshi,Joshi Chemicals,+91 90000 00018,IndiaMART,Sneha,60
+L19,Swati Kulkarni,Kulkarni Foods,+91 90000 00019,Website,Arjun,0
+L20,Manoj Tiwari,Tiwari Distributors,+91 90000 00020,Cold call,Imran,10
+L21,Ritu Bansal,Bansal Ceramics,+91 90000 00021,Trade show,Priya,8
+L22,Gaurav Malhotra,Malhotra Auto Parts,+91 90000 00022,Referral,Rahul,3
+L23,Divya Pillai,Pillai Organics,+91 90000 00023,IndiaMART,Sneha,1
+L24,Arvind Chauhan,Chauhan Steel,+91 90000 00024,Website,Imran,30

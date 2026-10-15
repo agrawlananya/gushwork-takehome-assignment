@@ -1,0 +1,13 @@
+{
+  "name": "BoxLine Equipment",
+  "city": "Pune",
+  "about": "Sells and installs packaging machines for small and mid-size manufacturers across Maharashtra and nearby states.",
+  "products": [
+    { "id": "carton_sealer", "name": "Carton sealer", "use": "Tapes the top and bottom of cartons for dispatch; fixed-size and random-size models." },
+    { "id": "shrink_wrapper", "name": "Shrink wrapper", "use": "Wraps products or multi-packs (bottles, snack packets) in shrink film with a heat tunnel." },
+    { "id": "strapping_machine", "name": "Strapping machine", "use": "Puts plastic straps around cartons and bales to hold them tight for transport." },
+    { "id": "stretch_wrapper", "name": "Stretch wrapper", "use": "Wraps loaded pallets in stretch film on a turntable so they stay stable in transit." },
+    { "id": "band_sealer", "name": "Band sealer", "use": "Heat-seals filled pouches (spices, snacks, ghee, bakery) continuously on a conveyor." },
+    { "id": "labelling_machine", "name": "Labelling machine", "use": "Applies wrap-around or front/back labels on bottles, jars and tubes." }
+  ]
+}

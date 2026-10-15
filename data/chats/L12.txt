@@ -1,0 +1,7 @@
+D-5, 11:00 - Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+D-5, 11:00 - Rahul: Hi Sunita, Rahul from BoxLine. Thanks for visiting our stall. Sharing carton sealer details.
+D-5, 11:01 - Rahul: <Media omitted>
+D-4, 15:30 - Sunita Iyer: We have 3 packing lines that need carton sealers. Can your engineer visit to check the line layout?
+D-4, 16:00 - Rahul: Sure, which day suits you?
+D-1, 10:15 - Sunita Iyer: Day after tomorrow works for us, 10 am at our Chakan plant. Please confirm the engineer.
+D-1, 10:40 - Rahul: Noted, will check engineer availability and confirm by evening.
