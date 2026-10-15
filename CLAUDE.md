@@ -74,10 +74,13 @@ migrations/ tests/unit/ tests/e2e/smoke.spec.ts  wrangler.jsonc  README.md
 - `npm run deploy` — build + `wrangler deploy`
 - `npx tsx scripts/eval.ts [--rules] [--provider=google|groq] [--only=L01,L04]` — agent accuracy vs `data/labels.csv`; saves `eval-results/latest.json`
 - `npx tsx scripts/make-snapshot.ts [--from-eval]` — writes `data/snapshot.json`; re-run whenever `PROMPT_VERSION` changes
+- `npx tsx scripts/smoke-api.ts [baseUrl]` — hits every API route (default http://localhost:5173; ~5 AI calls); resets demo data before and after
 - Scripts throttle to free-tier limits (Gemini ~4.5 s/call, Groq ~17 s/call). Write regexes in files with the Write tool, not shell heredocs (they can eat backslashes).
 - Local secrets go in `.dev.vars` (copy `.dev.vars.example`; `ENV=dev` enables `?today=` and `/api/dev/ai-spike`)
 
 Path aliases: `@/` → `src/client`, `@shared/` → `src/shared`. The worker imports shared code by relative path.
+
+Layout notes: `src/worker/agent/` is pure (no DB, no `Env`) so Node scripts can run it; `src/worker/agentService.ts` wires it to D1, the AI budget and providers. The API contract (request schemas + response types) is `src/shared/api.ts`. D1 allows ≤ 100 bound values per statement — use `chunk()` for multi-row inserts.
 
 ## Deadline
 Submit by **Fri 16 Oct 2026, 10:30 IST**: live link, public GitHub repo, ≤ 3 min video, ½-page note. If behind, follow the cut line in `03-TODO.md`.

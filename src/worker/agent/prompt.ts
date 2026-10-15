@@ -3,7 +3,8 @@ import { firstName, MEDIA_PLACEHOLDER, type AgentLead, type AgentMessage, type F
 
 // Step 2 of the agent: the prompt. Rules are copied from PRD §9.2–9.5 (one source of truth).
 
-export const PROMPT_VERSION = "v4";
+// v5: Gemini minimal thinking; no-chat tag and reason set by code.
+export const PROMPT_VERSION = "v5";
 
 /** Only the newest messages go to the AI. */
 export const MAX_PROMPT_MESSAGES = 30;

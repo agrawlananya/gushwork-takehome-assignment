@@ -39,6 +39,8 @@ export function createProviders(cfg: ProviderConfig): AgentProvider[] {
       name: "google",
       modelId: cfg.GEMINI_MODEL,
       model: createGoogle({ apiKey: cfg.GEMINI_API_KEY })(cfg.GEMINI_MODEL),
+      // Measured on L09: ~1.8 s with minimal thinking vs 2–6 s (sometimes 11 s) on the default level.
+      providerOptions: { google: { thinkingConfig: { thinkingLevel: "minimal" } } },
     });
   }
   if (cfg.GROQ_API_KEY) {
@@ -63,7 +65,12 @@ export type ModelCall =
       latencyMs: number;
     };
 
-export async function callModel(provider: AgentProvider, system: string, prompt: string): Promise<ModelCall> {
+export async function callModel(
+  provider: AgentProvider,
+  system: string,
+  prompt: string,
+  timeoutMs = AI_TIMEOUT_MS,
+): Promise<ModelCall> {
   const started = Date.now();
   try {
     const result = await generateText({
@@ -73,7 +80,7 @@ export async function callModel(provider: AgentProvider, system: string, prompt:
       output: Output.object({ schema: AgentOutput }),
       temperature: 0.3,
       maxRetries: 0,
-      timeout: AI_TIMEOUT_MS,
+      timeout: timeoutMs,
       providerOptions: provider.providerOptions,
     });
     return {

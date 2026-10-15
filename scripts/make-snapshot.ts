@@ -35,7 +35,7 @@ if (args.includes("--from-eval")) {
   const company = loadCompany();
   results = [];
   for (const lead of loadSample(now)) {
-    const result = await scoreLead(lead, lead.messages, { providers, company, today, aiAllowed: true, beforeCall: throttle });
+    const result = await scoreLead(lead, lead.messages, { providers, company, today, aiAllowed: true, beforeCall: throttle, deadlineMs: 600_000 });
     console.log(`${lead.id} ${result.output.tag} via ${result.provider}`);
     results.push({ id: lead.id, result });
   }

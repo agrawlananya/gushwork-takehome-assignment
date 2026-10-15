@@ -13,6 +13,7 @@
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/client/*"],
       "@shared/*": ["./src/shared/*"]

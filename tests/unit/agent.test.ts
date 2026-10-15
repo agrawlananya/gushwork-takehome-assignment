@@ -166,6 +166,14 @@ describe("scoreLead", () => {
     expect(result.attempts).toHaveLength(1);
   });
 
+  it("past the deadline, skips the AI and uses the rules", async () => {
+    const lead = byId("L04");
+    const fake = { name: "google" as const, modelId: "fake", model: "fake" };
+    const result = await scoreLead(lead, lead.messages, { providers: [fake], company, today: TODAY, aiAllowed: true, deadlineMs: 0 });
+    expect(result.source).toBe("rules");
+    expect(result.attempts.map((a) => a.error)).toEqual(["skipped: agent deadline reached", null]);
+  });
+
   it("over the AI budget, records why it used the rules", async () => {
     const lead = byId("L13");
     const result = await scoreLead(lead, lead.messages, { providers: [], company, today: TODAY, aiAllowed: false });
@@ -186,12 +194,12 @@ describe("applyNoChatRules", () => {
   };
 
   it("sets the tag from the facts and clears needs_reply when there is no chat", () => {
-    expect(applyNoChatRules(ai, factsOf("L21"))).toMatchObject({ tag: "cold", needs_reply: false }); // 8 days
-    expect(applyNoChatRules({ ...ai, tag: "cold" }, factsOf("L13"))).toMatchObject({ tag: "warm" }); // 1 day
+    expect(applyNoChatRules(ai, factsOf("L21"), "Trade show")).toMatchObject({ tag: "cold", needs_reply: false, reason: "Trade show lead with no conversation since." }); // 8 days
+    expect(applyNoChatRules({ ...ai, tag: "cold" }, factsOf("L13"), "IndiaMART")).toMatchObject({ tag: "warm", reason: "New IndiaMART lead; no conversation yet." }); // 1 day
   });
 
   it("leaves leads with a chat alone", () => {
-    expect(applyNoChatRules(ai, factsOf("L04"))).toBe(ai);
+    expect(applyNoChatRules(ai, factsOf("L04"), "Referral")).toBe(ai);
   });
 });
 

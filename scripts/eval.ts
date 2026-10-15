@@ -41,6 +41,8 @@ for (const lead of leads) {
     today,
     aiAllowed: !rulesOnly,
     beforeCall: throttle,
+    // Throttle waits happen inside the run, so the 20 s on-screen deadline does not apply here.
+    deadlineMs: 600_000,
   });
   results.push({ id: lead.id, result });
   const exp = labels[lead.id]!;
