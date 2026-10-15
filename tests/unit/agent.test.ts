@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { normalisePhone, formatPhone } from "@shared/phone";
 import { parseCsv } from "@shared/sampleData";
 import { checkOutput, madeUpNumbers, madeUpWeekdays, repeatsSentMessage } from "../../src/worker/agent/checks";
-import { computeFacts } from "../../src/worker/agent/facts";
+import { computeFacts, contactFromMessages } from "../../src/worker/agent/facts";
 import { ruleEngine } from "../../src/worker/agent/fallback";
 import { buildUserPrompt } from "../../src/worker/agent/prompt";
 import { applyNoChatRules, changeNote, scoreLead } from "../../src/worker/agent/run";
@@ -61,6 +61,30 @@ describe("computeFacts", () => {
   it("no-chat leads: new if created within 7 days", () => {
     expect(factsOf("L13")).toMatchObject({ hasChat: false, isNewLead: true, lastSender: "none", lastAskDate: null });
     expect(factsOf("L21").isNewLead).toBe(false);
+  });
+});
+
+describe("contactFromMessages (after a message is removed)", () => {
+  it("uses the newest remaining message, and the newest buyer message", () => {
+    const lead = byId("L04");
+    expect(contactFromMessages(lead.messages, lead.createdAt)).toEqual({
+      lastContactAt: lead.lastContactAt,
+      lastBuyerMessageAt: lead.lastBuyerMessageAt,
+    });
+  });
+
+  it("goes back to the earlier contact when the newest message is removed", () => {
+    const lead = byId("L12"); // last message is the rep's "will confirm by evening"
+    const contact = contactFromMessages(lead.messages.slice(0, -1), lead.createdAt);
+    expect(contact.lastContactAt).toBe(lead.messages.at(-2)!.sentAt);
+    expect(contact.lastBuyerMessageAt).toBe(lead.lastBuyerMessageAt);
+  });
+
+  it("falls back to when the lead was created when nothing is left", () => {
+    expect(contactFromMessages([], "2026-10-10T04:30:00.000Z")).toEqual({
+      lastContactAt: "2026-10-10T04:30:00.000Z",
+      lastBuyerMessageAt: null,
+    });
   });
 });
 

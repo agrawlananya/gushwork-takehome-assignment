@@ -86,7 +86,8 @@ export type Lead = {
   changeNote: string | null;
 };
 
-export type Message = { id: number; sender: Sender; text: string; sentAt: string };
+/** `removable`: added in the app (pasted or marked as sent), so the rep can remove it. Sample chat history is fixed. */
+export type Message = { id: number; sender: Sender; text: string; sentAt: string; removable: boolean };
 
 export type LeadDetail = { today: string; lead: Lead; messages: Message[] };
 

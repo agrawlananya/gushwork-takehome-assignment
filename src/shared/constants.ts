@@ -5,7 +5,7 @@ export const DATE_RULES = ["needs_reply", "buyer_asked", "said_no", "hot_plus_2"
 export const DRAFT_STATUSES = ["ai", "edited"] as const;
 export const AGENT_SOURCES = ["ai", "rules"] as const;
 export const MESSAGE_ORIGINS = ["seed", "paste", "mark_sent"] as const;
-export const AGENT_TRIGGERS = ["seed", "new_lead", "new_messages", "sent", "regenerate"] as const;
+export const AGENT_TRIGGERS = ["seed", "new_lead", "new_messages", "sent", "regenerate", "deleted"] as const;
 
 export const REPS = [
   { id: "priya", name: "Priya" },

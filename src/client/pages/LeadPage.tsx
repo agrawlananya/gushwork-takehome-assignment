@@ -1,13 +1,14 @@
-import type { LeadDetail } from "@shared/api";
+import type { LeadDetail, Message } from "@shared/api";
 import { formatPhone } from "@shared/phone";
 import type { Sender } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Phone } from "lucide-react";
+import { ArrowLeft, Phone, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { AddMessages } from "@/components/AddMessages";
 import { RuleBasedBadge, TagBadge } from "@/components/Badges";
 import { ChatThread } from "@/components/ChatThread";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DraftEditor } from "@/components/DraftEditor";
 import { AgentUpdating, ErrorState } from "@/components/States";
 import { api, keys } from "@/lib/api";
@@ -21,7 +22,9 @@ export function LeadPage() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const detail = useQuery({ queryKey: keys.lead(id), queryFn: () => api.lead(id) });
-  const [notice, setNotice] = useState<string | null>(null);
+  /** Result note after an agent run. After "Mark as sent" it carries the sent message, so it can be undone. */
+  const [notice, setNotice] = useState<{ text: string; undoMessageId?: number } | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<Message | null>(null);
 
   /** After any change: show the new lead right away, and refresh the lists and counts. */
   function applied(data: LeadDetail) {
@@ -35,26 +38,38 @@ export function LeadPage() {
     mutationFn: (draft: string) => api.markSent(id, draft),
     onSuccess: (data) => {
       applied(data);
-      setNotice(`Marked as sent. Next follow-up: ${shortDate(data.lead.nextFollowUpDate)}. A new draft is ready for then.`);
+      const sent = data.messages.findLast((m) => m.sender === "rep" && m.removable);
+      setNotice({
+        text: `Marked as sent. Next follow-up: ${shortDate(data.lead.nextFollowUpDate)}. A new draft is ready for then.`,
+        undoMessageId: sent?.id,
+      });
     },
   });
   const regenerate = useMutation({
     mutationFn: () => api.regenerate(id),
     onSuccess: (data) => {
       applied(data);
-      setNotice(data.lead.changeNote ? `New draft ready · ${data.lead.changeNote}` : "New draft ready.");
+      setNotice({ text: data.lead.changeNote ? `New draft ready · ${data.lead.changeNote}` : "New draft ready." });
     },
   });
   const addMessages = useMutation({
     mutationFn: ({ text, senders }: { text: string; senders: Sender[] }) => api.addMessages(id, text, senders),
     onSuccess: (data) => {
       applied(data);
-      setNotice(data.lead.changeNote ? `Updated · ${data.lead.changeNote}` : "Updated · tag unchanged, new draft ready.");
+      setNotice({ text: data.lead.changeNote ? `Updated · ${data.lead.changeNote}` : "Updated · tag unchanged, new draft ready." });
+    },
+  });
+  const removeMessage = useMutation({
+    mutationFn: ({ messageId }: { messageId: number; undo: boolean }) => api.removeMessage(id, messageId),
+    onSuccess: (data, { undo }) => {
+      applied(data);
+      const change = data.lead.changeNote ? ` · ${data.lead.changeNote}` : "";
+      setNotice({ text: `${undo ? "Undone: the message is removed" : "Message removed"}${change}. Next follow-up: ${shortDate(data.lead.nextFollowUpDate)}.` });
     },
   });
 
-  const agentBusy = markSent.isPending || regenerate.isPending || addMessages.isPending;
-  const mutationError = markSent.error ?? regenerate.error ?? addMessages.error ?? saveDraft.error;
+  const agentBusy = markSent.isPending || regenerate.isPending || addMessages.isPending || removeMessage.isPending;
+  const mutationError = markSent.error ?? regenerate.error ?? addMessages.error ?? removeMessage.error ?? saveDraft.error;
 
   // Back keeps the list as it was (rep, scroll) when we came from inside the app.
   const goBack = () => (location.key !== "default" ? navigate(-1) : navigate("/"));
@@ -113,8 +128,22 @@ export function LeadPage() {
       </section>
 
       <div className="mt-3 space-y-2" aria-live="polite">
-        {agentBusy && <AgentUpdating />}
-        {notice && !agentBusy && <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{notice}</p>}
+        {agentBusy && !removeMessage.isPending && <AgentUpdating />}
+        {agentBusy && removeMessage.isPending && <AgentUpdating label="Removing the message and updating this lead…" />}
+        {notice && !agentBusy && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+            <p className="min-w-0 flex-1">{notice.text}</p>
+            {notice.undoMessageId !== undefined && (
+              <button
+                type="button"
+                className="inline-flex min-h-9 items-center gap-1 rounded-md px-2 font-semibold text-emerald-900 underline-offset-2 hover:bg-emerald-100 hover:underline"
+                onClick={() => removeMessage.mutate({ messageId: notice.undoMessageId!, undo: true })}
+              >
+                <Undo2 className="size-4" aria-hidden /> Undo
+              </button>
+            )}
+          </div>
+        )}
         {mutationError && !agentBusy && <ErrorState message={mutationError.message} />}
       </div>
 
@@ -139,7 +168,7 @@ export function LeadPage() {
           Chat
         </h2>
         <div className="rounded-xl bg-slate-100 p-3">
-          <ChatThread messages={messages} buyerName={lead.name} repName={lead.repName} />
+          <ChatThread messages={messages} buyerName={lead.name} repName={lead.repName} busy={agentBusy} onRemove={setConfirmRemove} />
         </div>
         <div className="mt-3">
           <AddMessages
@@ -154,6 +183,23 @@ export function LeadPage() {
           />
         </div>
       </section>
+
+      <ConfirmDialog
+        open={confirmRemove !== null}
+        title="Remove this message?"
+        confirmLabel="Remove"
+        danger
+        onCancel={() => setConfirmRemove(null)}
+        onConfirm={() => {
+          const message = confirmRemove;
+          setConfirmRemove(null);
+          setNotice(null);
+          if (message) removeMessage.mutate({ messageId: message.id, undo: false });
+        }}
+      >
+        <p>It's removed from this chat and the agent updates the lead. It isn't deleted from WhatsApp.</p>
+        {confirmRemove && <p className="mt-2 line-clamp-3 rounded bg-slate-100 p-2 text-slate-800">{confirmRemove.text}</p>}
+      </ConfirmDialog>
     </Shell>
   );
 }

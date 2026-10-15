@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { ZodType } from "zod";
 import {
@@ -31,6 +31,7 @@ import {
   toMessage,
 } from "./db/queries";
 import { agentRuns, leads, messages, type NewLeadRow } from "./db/schema";
+import { contactFromMessages } from "./agent/facts";
 import { resetDemo } from "./demo/reset";
 import { apiError } from "./lib/errors";
 
@@ -213,6 +214,30 @@ app.post("/leads/:id/regenerate", async (c) => {
   const row = await getLead(ctx.db, c.req.param("id"));
   if (!row) return apiError(c, 404, "NOT_FOUND", "Lead not found");
   await rerunAgent(ctx, row.id, "regenerate", repName(row.repId));
+  return c.json((await leadDetail(ctx, row.id))!);
+});
+
+/**
+ * Remove a message added in the app (a wrong paste, or "Mark as sent" by mistake), then re-run
+ * the agent so tag, date and draft match the chat again. Sample chat history can't be removed.
+ */
+app.delete("/leads/:id/messages/:messageId", async (c) => {
+  const ctx = c.var.ctx;
+  const row = await getLead(ctx.db, c.req.param("id"));
+  if (!row) return apiError(c, 404, "NOT_FOUND", "Lead not found");
+
+  const messageId = Number(c.req.param("messageId"));
+  const all = await getMessages(ctx.db, row.id);
+  const target = all.find((m) => m.id === messageId);
+  if (!target) return apiError(c, 404, "NOT_FOUND", "Message not found");
+  if (target.origin === "seed") return apiError(c, 400, "VALIDATION", "Only messages added here can be removed");
+
+  const remaining = all.filter((m) => m.id !== messageId);
+  await ctx.db.batch([
+    ctx.db.delete(messages).where(and(eq(messages.id, messageId), eq(messages.leadId, row.id))),
+    ctx.db.update(leads).set(contactFromMessages(remaining, row.createdAt)).where(eq(leads.id, row.id)),
+  ]);
+  await rerunAgent(ctx, row.id, "deleted", repName(row.repId));
   return c.json((await leadDetail(ctx, row.id))!);
 });
 

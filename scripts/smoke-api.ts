@@ -1,4 +1,4 @@
-// Hits every API route and checks the answers (TODO P5). Makes ~5 AI calls.
+// Hits every API route and checks the answers (TODO P5). Makes ~7 AI calls.
 //
 //   npx tsx scripts/smoke-api.ts                       against http://localhost:5173
 //   npx tsx scripts/smoke-api.ts https://<app>.workers.dev
@@ -72,6 +72,27 @@ check(
   sent.data.messages.at(-1)?.sender === "rep" && l07.nextFollowUpDate > sent.data.today,
   `${l07.tag} · next ${l07.nextFollowUpDate} (${l07.dateRule}) · ${l07.agentSource} · ${sent.ms} ms`,
 );
+
+// Undo "Mark as sent": remove the message that was just added. Last contact goes back to before.
+const before = detail.data; // L04, untouched so far apart from the draft edit
+const sentL04 = await call<LeadDetail>("POST", "/leads/L04/sent", { draft: "Neha ji, checking the best rate for 2 units now." });
+const sentMsg = sentL04.data.messages.at(-1)!;
+check("sent message is removable, sample history is not", sentMsg.removable && !sentL04.data.messages[0]!.removable);
+const undone = await call<LeadDetail>("DELETE", `/leads/L04/messages/${sentMsg.id}`);
+check(
+  "remove a sent message → gone, last contact restored, agent re-run",
+  undone.status === 200 &&
+    !undone.data.messages.some((m) => m.id === sentMsg.id) &&
+    undone.data.messages.length === before.messages.length &&
+    undone.data.lead.lastContactAt === before.lead.lastContactAt &&
+    undone.data.lead.needsReply,
+  `${undone.data.lead.tag} · next ${undone.data.lead.nextFollowUpDate} (${undone.data.lead.dateRule}) · ${undone.ms} ms`,
+);
+const seedMsg = undone.data.messages[0]!;
+const seedDelete = await call<ApiError>("DELETE", `/leads/L04/messages/${seedMsg.id}`);
+check("sample chat history can't be removed → 400", seedDelete.status === 400, seedDelete.data.error.message);
+const otherLead = await call<ApiError>("DELETE", `/leads/L09/messages/${seedMsg.id}`);
+check("message from another lead → 404", otherLead.status === 404);
 
 const pasted = await call<LeadDetail>("POST", "/leads/L09/messages", {
   text: "Buyer: Production head approved the automatic model. Please send the final quote for 1 unit, we want to order this month.",

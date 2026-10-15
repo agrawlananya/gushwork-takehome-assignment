@@ -58,6 +58,19 @@ export function computeFacts(lead: AgentLead, messages: readonly AgentMessage[],
   };
 }
 
+/**
+ * Last-contact fields worked out again from the messages left after one is removed.
+ * With no messages left, last contact falls back to when the lead was created.
+ */
+export function contactFromMessages(messages: readonly AgentMessage[], createdAt: string) {
+  const newest = (items: readonly AgentMessage[]) =>
+    items.reduce<string | null>((max, m) => (max === null || m.sentAt > max ? m.sentAt : max), null);
+  return {
+    lastContactAt: newest(messages) ?? createdAt,
+    lastBuyerMessageAt: newest(messages.filter((m) => m.sender === "buyer")),
+  };
+}
+
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? name;
 }

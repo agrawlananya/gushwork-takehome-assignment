@@ -29,7 +29,7 @@ export function toLead(row: LeadRow, today: string): Lead {
 }
 
 export function toMessage(row: MessageRow): Message {
-  return { id: row.id, sender: row.sender, text: row.text, sentAt: row.sentAt };
+  return { id: row.id, sender: row.sender, text: row.text, sentAt: row.sentAt, removable: row.origin !== "seed" };
 }
 
 /** One query: the lead row holds the latest agent result (Tech §4). Sorted per PRD §10. */
