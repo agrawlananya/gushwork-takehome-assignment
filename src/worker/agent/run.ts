@@ -110,6 +110,7 @@ async function tryProviders(
     buyerFirstName: firstName(lead.name),
     chatText: messages.map((m) => m.text).join("\n"),
     today: opts.today,
+    recentRepMessages: messages.filter((m) => m.sender === "rep").slice(-3).map((m) => m.text),
   };
 
   const deadline = Date.now() + (opts.deadlineMs ?? AGENT_DEADLINE_MS);

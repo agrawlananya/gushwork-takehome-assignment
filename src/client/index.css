@@ -2,6 +2,25 @@
 
 @layer base {
   body {
-    @apply bg-white text-slate-900;
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+/* Shared controls. Phone first: every tap target is at least 44 px high. */
+@layer components {
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-link {
+    @apply inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-blue-700 underline-offset-2 hover:underline disabled:opacity-50;
+  }
+  .field {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-2 focus:outline-blue-600/30;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-800;
   }
 }

@@ -15,6 +15,8 @@ export type CheckContext = {
   /** All chat text, to check that every number in the draft is real. */
   chatText: string;
   today: string;
+  /** The rep's recent messages: the next draft must not repeat one (e.g. right after "Mark as sent"). */
+  recentRepMessages?: readonly string[];
 };
 
 export type CheckResult = {
@@ -50,8 +52,21 @@ export function checkOutput(out: AgentOutput, ctx: CheckContext): CheckResult {
   if (!out.draft.toLowerCase().includes(ctx.buyerFirstName.toLowerCase())) {
     problems.push(`The draft must start with the buyer's first name, ${ctx.buyerFirstName}.`);
   }
+  if (repeatsSentMessage(out.draft, ctx.recentRepMessages ?? [])) {
+    problems.push("The draft repeats a message the rep already sent. Write the next follow-up instead, building on that message.");
+  }
 
   return { problems, cleaned: { ...out, requested_date: sensibleDate(out.requested_date, ctx.today) } };
+}
+
+/** True when the draft is (nearly) the same text as a message the rep already sent. */
+export function repeatsSentMessage(draft: string, sent: readonly string[]): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const d = norm(draft);
+  return sent.some((m) => {
+    const s = norm(m);
+    return s.length > 20 && (s === d || d.includes(s) || s.includes(d));
+  });
 }
 
 /** Numbers ≥ 100 in the draft (prices, quantities, sizes) that never appear in the chat. */

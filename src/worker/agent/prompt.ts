@@ -3,8 +3,8 @@ import { firstName, MEDIA_PLACEHOLDER, type AgentLead, type AgentMessage, type F
 
 // Step 2 of the agent: the prompt. Rules are copied from PRD §9.2–9.5 (one source of truth).
 
-// v5: Gemini minimal thinking; no-chat tag and reason set by code.
-export const PROMPT_VERSION = "v5";
+// v5: Gemini minimal thinking; no-chat tag and reason set by code. v6: no "ready"/"sending now" claims.
+export const PROMPT_VERSION = "v6";
 
 /** Only the newest messages go to the AI. */
 export const MAX_PROMPT_MESSAGES = 30;
@@ -71,7 +71,8 @@ Only when the buyer asked us to contact them on or after a specific day ("call m
 - Mentions one real detail from the chat (machine, quantity, last question).
 - Ends with one clear, easy next step (a question, a time for a call, confirm a visit). Use exactly one question mark. Only exception: when the buyer said no, end with a friendly line instead.
 - Never pick a specific date, weekday or time for a demo, visit or call yourself; ask which day suits the buyer, or refer to the day the buyer named. If the buyer named a relative day ("day after tomorrow"), work it out from that chat line's date and say it relative to today (e.g. "tomorrow").
-- Never say something is confirmed, booked, approved or done unless the rep already said so in the chat. If the rep promised to confirm and didn't, apologise for the delay and say they are confirming it now.
+- Never say something is confirmed, booked, approved, ready, sent or done unless the rep already said so in the chat. If the rep promised to confirm and didn't, apologise for the delay and say they are confirming it now.
+- Don't promise to send a quote, price or document "now"; the rep may not have it yet. Say the rep is working on it, or offer it and ask a question.
 - Leads with no chat: you only know the source and company. Don't claim anything was discussed.
 - Matches the buyer's language and tone (English or Hinglish).
 - Never makes up prices, discounts, delivery dates or specs. Only uses numbers already in the chat. If a number is needed but missing, it asks a question instead.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalisePhone, formatPhone } from "@shared/phone";
 import { parseCsv } from "@shared/sampleData";
-import { checkOutput, madeUpNumbers, madeUpWeekdays } from "../../src/worker/agent/checks";
+import { checkOutput, madeUpNumbers, madeUpWeekdays, repeatsSentMessage } from "../../src/worker/agent/checks";
 import { computeFacts } from "../../src/worker/agent/facts";
 import { ruleEngine } from "../../src/worker/agent/fallback";
 import { buildUserPrompt } from "../../src/worker/agent/prompt";
@@ -104,6 +104,13 @@ describe("checkOutput", () => {
     expect(madeUpWeekdays("Visit confirmed for Friday at 10 am", "Day after tomorrow works")).toEqual(["friday"]);
     expect(madeUpWeekdays("See you Friday", "Friday works for us")).toEqual([]);
     expect(checkOutput({ ...good, draft: "Neha ji, can I come on Friday?" }, ctx).problems).toHaveLength(1);
+  });
+
+  it("flags a draft that repeats a message the rep already sent", () => {
+    const sent = "Neha ji, I've asked my manager for the best price on 2 units at ₹1,45,000.\nCan you share the other quote?";
+    expect(checkOutput(good, { ...ctx, recentRepMessages: [sent] }).problems).toHaveLength(1);
+    expect(repeatsSentMessage("Neha ji, any update on the other quote?", [sent])).toBe(false);
+    expect(repeatsSentMessage("ok", ["ok"])).toBe(false); // too short to judge
   });
 
   it("flags a missing first name and a long draft", () => {
