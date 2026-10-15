@@ -139,6 +139,7 @@ Five small tables. The lead row also holds the **latest** agent result, so the T
 | source | text | One of the fixed sources |
 | rep_id | text FK → reps | |
 | last_contact_at | text (ISO, UTC) | Updated on new messages and "mark as sent" |
+| last_buyer_message_at | text (ISO, UTC) null | Newest buyer message; sort tie-break (PRD §10) without a join |
 | created_at | text (ISO, UTC) | |
 | tag | text | `hot` · `warm` · `cold` |
 | reason | text | ≤ 120 chars |
