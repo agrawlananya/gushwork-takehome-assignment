@@ -13,6 +13,7 @@
     {
       "binding": "DB",
       "database_name": "leads-db",
+      "database_id": "b115c0e7-1096-4a28-814c-bd0038b3a80d",
       "migrations_dir": "migrations"
     }
   ],

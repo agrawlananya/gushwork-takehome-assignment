@@ -82,5 +82,11 @@ Path aliases: `@/` → `src/client`, `@shared/` → `src/shared`. The worker imp
 
 Layout notes: `src/worker/agent/` is pure (no DB, no `Env`) so Node scripts can run it; `src/worker/agentService.ts` wires it to D1, the AI budget and providers. The API contract (request schemas + response types) is `src/shared/api.ts`. D1 allows ≤ 100 bound values per statement — use `chunk()` for multi-row inserts.
 
+## Live
+- App: https://lead-followup-agent.22051664.workers.dev (Cloudflare account of 22051664@kiit.ac.in)
+- D1 `leads-db` id `b115c0e7-1096-4a28-814c-bd0038b3a80d` (APAC). Secrets `GEMINI_API_KEY`, `GROQ_API_KEY` set via `wrangler secret put`.
+- Smoke test live: `npx tsx scripts/smoke-api.ts https://lead-followup-agent.22051664.workers.dev` (resets demo data before/after).
+- Measured CPU (free plan limit 10 ms): reads 2–3 ms; reset 7–25 ms; agent runs 11–19 ms (one 77 ms cold start). All succeeded, but agent runs and reset sit above the documented limit.
+
 ## Deadline
 Submit by **Fri 16 Oct 2026, 10:30 IST**: live link, public GitHub repo, ≤ 3 min video, ½-page note. If behind, follow the cut line in `03-TODO.md`.
