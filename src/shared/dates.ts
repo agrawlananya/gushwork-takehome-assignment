@@ -66,3 +66,13 @@ function dateToUtcMs(date: string): number {
 function msToDate(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
+
+/** Format a UTC timestamp in IST with a date-fns pattern, e.g. "EEE d MMM HH:mm". */
+export function formatIST(timestamp: string | Date, pattern: string): string {
+  return format(new TZDate(new Date(timestamp), IST), pattern);
+}
+
+/** Format an IST `YYYY-MM-DD` date, e.g. "EEE d MMM" → "Thu 15 Oct". */
+export function formatDate(date: string, pattern: string): string {
+  return format(new TZDate(dateToUtcMs(date), "UTC"), pattern);
+}

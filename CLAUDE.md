@@ -72,6 +72,9 @@ migrations/ tests/unit/ tests/e2e/smoke.spec.ts  wrangler.jsonc  README.md
 - `npm run cf-typegen` — regenerate `src/worker/worker-configuration.d.ts` after changing `wrangler.jsonc` or `.dev.vars`
 - `npm run db:generate` → `npm run db:migrate:local` / `db:migrate:remote`
 - `npm run deploy` — build + `wrangler deploy`
+- `npx tsx scripts/eval.ts [--rules] [--provider=google|groq] [--only=L01,L04]` — agent accuracy vs `data/labels.csv`; saves `eval-results/latest.json`
+- `npx tsx scripts/make-snapshot.ts [--from-eval]` — writes `data/snapshot.json`; re-run whenever `PROMPT_VERSION` changes
+- Scripts throttle to free-tier limits (Gemini ~4.5 s/call, Groq ~17 s/call). Write regexes in files with the Write tool, not shell heredocs (they can eat backslashes).
 - Local secrets go in `.dev.vars` (copy `.dev.vars.example`; `ENV=dev` enables `?today=` and `/api/dev/ai-spike`)
 
 Path aliases: `@/` → `src/client`, `@shared/` → `src/shared`. The worker imports shared code by relative path.

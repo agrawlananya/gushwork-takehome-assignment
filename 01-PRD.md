@@ -358,6 +358,8 @@ The detail screen shows "Why this date" using the rule's plain-language name, e.
 - Ends with one clear, easy next step (a question, a time for a call, confirm a visit).
 - Matches the buyer's language and tone (English or Hinglish).
 - Never makes up prices, discounts, delivery dates or specs. Only uses numbers already in the chat. If a number is needed but missing, it asks a question instead.
+- Never promises a better price, a discount, a "special offer" or a slot the rep has not confirmed. If the buyer is waiting on something the rep must decide, the draft says the rep is checking and asks one useful question. *(Added after the P1 AI test, where a draft offered an unapproved "special bundle discount".)*
+- Written as the rep, in first person.
 - Cold leads: a soft check-in with an easy way out. No guilt ("I've messaged you 3 times…").
 - Leads with no chat: a short first message introducing the rep and the company, tied to the lead's source.
 - At most one emoji. No sign-off block.
