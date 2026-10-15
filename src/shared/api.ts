@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { MAX_PASTE_CHARS, REPS } from "./constants";
+import { MAX_PASTE_CHARS, MAX_PASTE_MESSAGES, REPS } from "./constants";
 import { isIsoDate } from "./dates";
 import { normalisePhone } from "./phone";
 import type { AgentSource, DateRule, DraftStatus, Sender, Source, Tag } from "./types";
-import { Source as SourceSchema } from "./types";
+import { Sender as SenderSchema, Source as SourceSchema } from "./types";
 
 // The API contract (Tech §6), shared by the Worker and the web app.
 
@@ -41,7 +41,15 @@ export const AddMessagesInput = z.object({
     .trim()
     .min(1, "Paste at least one message")
     .max(MAX_PASTE_CHARS, `Paste at most ${MAX_PASTE_CHARS.toLocaleString("en-IN")} characters`),
+  /** Who sent each parsed message, when the rep switched a side in the preview (PRD C-3). Same order as the parser's output. */
+  senders: z.array(SenderSchema).max(MAX_PASTE_MESSAGES).optional(),
 });
+
+/** Applies the rep's Buyer/Rep choices from the preview to the parsed messages, by position. */
+export function applySenders<T extends { sender: Sender }>(messages: T[], senders: readonly Sender[] | undefined): T[] {
+  if (!senders || senders.length !== messages.length) return messages;
+  return messages.map((m, i) => ({ ...m, sender: senders[i]! }));
+}
 
 export const DraftInput = z.object({
   draft: z.string().trim().min(1, "The draft is empty").max(1000),

@@ -11,6 +11,8 @@ export type ParsedMessage = {
   sentAt: string;
   /** False when the line had no time and got "now" (PRD C-4). */
   timeKnown: boolean;
+  /** False when the text named no sender, so the side is a guess the rep should check. */
+  senderKnown: boolean;
 };
 
 export type ParseOptions = {
@@ -29,7 +31,8 @@ export type ParseResult = {
 };
 
 type Stamp = { date: string; hours: number; minutes: number };
-type Draft = { senderName: string; text: string; stamp: Stamp | null };
+/** `senderName` is null when the text didn't say who sent it. */
+type Draft = { senderName: string | null; text: string; stamp: Stamp | null };
 
 // Exports carry invisible direction marks and narrow no-break spaces (before "pm").
 const INVISIBLE = /[‎‏‪-‮⁦-⁩﻿]/g;
@@ -70,7 +73,7 @@ export function parseChat(input: string, options: ParseOptions): ParseResult {
       const last = drafts[drafts.length - 1]!;
       last.text = last.text ? `${last.text}\n${line}` : line;
     } else {
-      drafts.push({ senderName: "buyer", text: line, stamp: null });
+      drafts.push({ senderName: null, text: line, stamp: null });
     }
   }
 
@@ -78,10 +81,11 @@ export function parseChat(input: string, options: ParseOptions): ParseResult {
     drafts.filter((d) => d.text.length > 0),
     now,
   ).map(({ draft, sentAt }) => ({
-    sender: senderOf(draft.senderName, options.repName),
+    sender: draft.senderName ? senderOf(draft.senderName, options.repName) : guessSender(draft.text, options.buyerName),
     text: draft.text,
     sentAt,
     timeKnown: draft.stamp !== null,
+    senderKnown: draft.senderName !== null,
   }));
 
   return {
@@ -91,6 +95,24 @@ export function parseChat(input: string, options: ParseOptions): ParseResult {
       rep: messages.filter((m) => m.sender === "rep").length,
     },
   };
+}
+
+/**
+ * A message with no sender name. The rep often pastes their own sent message, which opens by
+ * addressing the buyer ("Farah, sorry…", "Hi Neha ji", "Sir, …"): that's the rep. Otherwise
+ * assume the buyer, since a pasted reply is the common case. The preview lets the rep switch it.
+ */
+export function guessSender(text: string, buyerName?: string): Sender {
+  const t = text.trim().toLowerCase();
+  const greeting = String.raw`^(?:(?:hi|hello|hey|dear|namaste|good (?:morning|afternoon|evening))[\s,!]+)?`;
+  if (new RegExp(`${greeting}(?:sir|ma'?am|madam)\\b`).test(t)) return "rep";
+  const first = buyerName ? firstWord(buyerName.trim().toLowerCase()) : "";
+  if (first && new RegExp(`${greeting}${escapeRegExp(first)}\\b`).test(t)) return "rep";
+  return "buyer";
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** Rep if the name is "Rep"/"Me" or its first word matches the rep's first name; otherwise buyer. */

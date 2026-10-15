@@ -1,5 +1,6 @@
 import type { LeadDetail } from "@shared/api";
 import { formatPhone } from "@shared/phone";
+import type { Sender } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Phone } from "lucide-react";
 import { useState } from "react";
@@ -45,7 +46,7 @@ export function LeadPage() {
     },
   });
   const addMessages = useMutation({
-    mutationFn: (text: string) => api.addMessages(id, text),
+    mutationFn: ({ text, senders }: { text: string; senders: Sender[] }) => api.addMessages(id, text, senders),
     onSuccess: (data) => {
       applied(data);
       setNotice(data.lead.changeNote ? `Updated · ${data.lead.changeNote}` : "Updated · tag unchanged, new draft ready.");
@@ -146,9 +147,9 @@ export function LeadPage() {
             buyerName={lead.name}
             draftEdited={lead.draftStatus === "edited"}
             busy={agentBusy}
-            onAdd={(text) => {
+            onAdd={(text, senders) => {
               setNotice(null);
-              return addMessages.mutateAsync(text);
+              return addMessages.mutateAsync({ text, senders });
             }}
           />
         </div>

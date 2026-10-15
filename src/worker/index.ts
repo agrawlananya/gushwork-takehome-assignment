@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import type { ZodType } from "zod";
 import {
   AddMessagesInput,
+  applySenders,
   DraftInput,
   LeadsQuery,
   NewLeadInput,
@@ -165,7 +166,9 @@ app.post("/leads/:id/messages", valid("json", AddMessagesInput), async (c) => {
   if (!row) return apiError(c, 404, "NOT_FOUND", "Lead not found");
 
   const rep = repName(row.repId);
-  const { messages: added } = parseChat(c.req.valid("json").text, { repName: rep, buyerName: row.name, now: ctx.now, today: ctx.today });
+  const { text, senders } = c.req.valid("json");
+  const parsed = parseChat(text, { repName: rep, buyerName: row.name, now: ctx.now, today: ctx.today });
+  const added = applySenders(parsed.messages, senders);
   if (added.length === 0) return apiError(c, 400, "VALIDATION", "No messages found in the pasted text");
   if (added.length > MAX_PASTE_MESSAGES) return apiError(c, 400, "VALIDATION", `Paste at most ${MAX_PASTE_MESSAGES} messages`);
 

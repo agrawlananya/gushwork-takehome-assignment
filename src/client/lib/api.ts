@@ -1,5 +1,6 @@
 import type { ApiError, LeadDetail, LeadList, Meta, NewLeadInput } from "@shared/api";
 import type { View } from "@shared/sort";
+import type { Sender } from "@shared/types";
 import { storage } from "./storage";
 
 export class ApiRequestError extends Error {
@@ -49,7 +50,8 @@ export const api = {
     request<LeadList>("GET", `/leads?view=${view}${rep ? `&rep=${encodeURIComponent(rep)}` : ""}`),
   lead: (id: string) => request<LeadDetail>("GET", `/leads/${encodeURIComponent(id)}`),
   createLead: (input: NewLeadInput) => request<LeadDetail>("POST", "/leads", input),
-  addMessages: (id: string, text: string) => request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/messages`, { text }),
+  addMessages: (id: string, text: string, senders?: Sender[]) =>
+    request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/messages`, { text, senders }),
   saveDraft: (id: string, draft: string) => request<LeadDetail>("PATCH", `/leads/${encodeURIComponent(id)}/draft`, { draft }),
   markSent: (id: string, draft: string) => request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/sent`, { draft }),
   regenerate: (id: string) => request<LeadDetail>("POST", `/leads/${encodeURIComponent(id)}/regenerate`),

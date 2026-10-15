@@ -2,7 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { addDays, istDateOf } from "@shared/dates";
-import { parseChat, senderOf } from "@shared/parseChat";
+import { applySenders } from "@shared/api";
+import { guessSender, parseChat, senderOf } from "@shared/parseChat";
 
 // Thursday 15 Oct 2026, 12:00 IST.
 const NOW = new Date("2026-10-15T06:30:00Z");
@@ -13,7 +14,7 @@ describe("parseChat — sample file format (D-n)", () => {
   it("reads D-n dates relative to today in IST", () => {
     const { messages } = parseChat("D-3, 14:05 - Neha Jain: Rate bhejo", opts);
     expect(messages).toEqual([
-      { sender: "buyer", text: "Rate bhejo", sentAt: "2026-10-12T08:35:00.000Z", timeKnown: true },
+      { sender: "buyer", text: "Rate bhejo", sentAt: "2026-10-12T08:35:00.000Z", timeKnown: true, senderKnown: true },
     ]);
   });
 
@@ -97,9 +98,53 @@ describe("parseChat — simple typed lines (PRD C-1, C-4)", () => {
     expect(messages.map((m) => m.sender)).toEqual(["buyer", "rep"]);
   });
 
-  it("treats a first line with no sender as the buyer", () => {
+  it("treats a first line with no sender as the buyer, flagged as a guess", () => {
     const { messages } = parseChat("Bhaiya rate kam karo", opts);
-    expect(messages).toMatchObject([{ sender: "buyer", text: "Bhaiya rate kam karo", timeKnown: false }]);
+    expect(messages).toMatchObject([{ sender: "buyer", text: "Bhaiya rate kam karo", timeKnown: false, senderKnown: false }]);
+  });
+
+  it("guesses the rep when an unlabelled message addresses the buyer (the rep pasting their own sent text)", () => {
+    const pasted = "Neha ji, sorry for the wait on the rate for 2 units.\nI am checking with my manager now. Can I call you at 4?";
+    const { messages } = parseChat(pasted, opts);
+    expect(messages).toMatchObject([{ sender: "rep", senderKnown: false }]);
+    expect(messages[0]!.text).toContain("checking with my manager");
+  });
+
+  it("names on a line always win over the guess", () => {
+    expect(parseChat("Neha Jain: Neha here, any update?", opts).messages[0]).toMatchObject({ sender: "buyer", senderKnown: true });
+  });
+});
+
+describe("guessSender", () => {
+  it("rep when the text opens by addressing the buyer or as sir/ma'am", () => {
+    expect(guessSender("Farah, sorry for the wait on the demo slot", "Farah Shaikh")).toBe("rep");
+    expect(guessSender("Hi Farah, sharing the brochure", "Farah Shaikh")).toBe("rep");
+    expect(guessSender("Namaste Neha ji! Kitne units chahiye?", "Neha Jain")).toBe("rep");
+    expect(guessSender("Ma'am ₹1,45,000 per unit", "Neha Jain")).toBe("rep");
+    expect(guessSender("Sir, the quote is attached", "Ramesh Gupta")).toBe("rep");
+  });
+
+  it("buyer otherwise, including a buyer greeting the rep", () => {
+    expect(guessSender("Hi Rahul, please confirm the slot", "Farah Shaikh")).toBe("buyer");
+    expect(guessSender("Thoda kam karo bhaiya", "Neha Jain")).toBe("buyer");
+    expect(guessSender("Farahbad unit needs 2 machines", "Farah Shaikh")).toBe("buyer"); // whole word only
+    expect(guessSender("price?")).toBe("buyer");
+  });
+});
+
+describe("applySenders", () => {
+  const msgs = [
+    { sender: "buyer" as const, text: "a" },
+    { sender: "buyer" as const, text: "b" },
+  ];
+
+  it("applies the rep's switches by position", () => {
+    expect(applySenders(msgs, ["rep", "buyer"]).map((m) => m.sender)).toEqual(["rep", "buyer"]);
+  });
+
+  it("ignores a list that doesn't match the parsed messages", () => {
+    expect(applySenders(msgs, ["rep"])).toBe(msgs);
+    expect(applySenders(msgs, undefined)).toBe(msgs);
   });
 
   it("returns nothing for empty input", () => {
