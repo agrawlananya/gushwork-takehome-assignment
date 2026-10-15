@@ -3,8 +3,6 @@
 | | |
 |---|---|
 | **Version** | 1.0 |
-| **Date** | 14 Oct 2026 |
-| **Owner** | Aman |
 | **Reads with** | `01-PRD.md` (what and why), `03-TODO.md` (build plan) |
 | **Cost target** | ₹0 / month — free tiers only |
 

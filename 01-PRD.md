@@ -4,10 +4,6 @@
 |---|---|
 | **Product** | Lead Follow-up Agent (working name) |
 | **Version** | 1.0 — MVP |
-| **Date** | 14 Oct 2026 |
-| **Owner** | Aman |
-| **Status** | Ready to build |
-| **Source** | "FDE Take-Home Assignment" brief |
 
 ---
 
